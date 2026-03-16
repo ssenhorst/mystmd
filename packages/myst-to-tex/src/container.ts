@@ -125,13 +125,16 @@ export const containerHandler: Handler = (node, state) => {
   state.ensureNewLine();
   state.data.longFigure = multipage;
   const lastContainer = state.data.isInContainer;
+  const lastContainerWidth = state.data.containerWidth;
   state.data.isInContainer = true;
+  state.data.containerWidth = node.width;
   state.data.nextCaptionNumbered = enumerated ?? !!localId;
   state.data.nextCaptionId = localId;
   state.renderChildren(node);
   state.trimEnd();
   state.data.longFigure = undefined;
   state.data.isInContainer = lastContainer;
+  state.data.containerWidth = lastContainerWidth;
   state.write(`\n\\end{${command}}`);
   if (after) state.write(after);
   addIndexEntries(node, state);

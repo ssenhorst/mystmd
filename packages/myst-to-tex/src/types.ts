@@ -45,6 +45,7 @@ export type Options = MystToTexSettings & {
 export type StateData = {
   isInTable?: boolean;
   isInContainer?: boolean;
+  containerWidth?: string | number;
   longFigure?: boolean;
   nextCaptionNumbered?: boolean;
   nextHeadingIsFrameTitle?: boolean;

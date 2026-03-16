@@ -313,4 +313,45 @@ describe('Test blockToFigureTransform', () => {
       ]),
     );
   });
+  test('block width metadata is propagated to figure container', async () => {
+    const mdast = u('root', [
+      u(
+        'block',
+        {
+          kind: 'notebook-code',
+          label: 'my-label',
+          identifier: 'my-label',
+          data: { 'fig-cap': 'My caption', metadata: '', width: '100%' },
+          attribute: '',
+        },
+        [u('paragraph', [u('text', 'value')])],
+      ),
+    ]) as any;
+    blockToFigureTransform(mdast);
+    expect(mdast).toEqual(
+      u('root', [
+        u(
+          'block',
+          {
+            kind: 'notebook-code',
+            data: { metadata: '', width: '100%' },
+            attribute: '',
+          },
+          [
+            u(
+              'container',
+              {
+                kind: 'figure',
+                label: 'my-label',
+                identifier: 'my-label',
+                width: '100%',
+                noSubcontainers: true,
+              },
+              [u('paragraph', [u('text', 'My caption')]), u('paragraph', [u('text', 'value')])],
+            ),
+          ],
+        ),
+      ]),
+    );
+  });
 });

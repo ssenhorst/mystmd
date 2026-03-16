@@ -137,6 +137,7 @@ export function blockToFigureTransform(
         kind,
         label: block.label,
         identifier: block.identifier,
+        width: block.data?.width,
         children,
       };
       if (block.kind === NotebookCell.code) {

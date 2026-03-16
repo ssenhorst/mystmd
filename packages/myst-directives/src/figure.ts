@@ -102,6 +102,7 @@ export const figureDirective: DirectiveSpec = {
     const container: GenericParent = {
       type: 'container',
       kind: (data.options?.kind as string) || 'figure',
+      width: data.options?.width as string,
       children,
     };
     addCommonDirectiveOptions(data, container);

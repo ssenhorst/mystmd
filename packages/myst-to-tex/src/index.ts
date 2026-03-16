@@ -371,7 +371,8 @@ const handlers: Record<string, Handler> = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { width: nodeWidth, url: nodeSrc, align: nodeAlign } = node;
     const src = nodeSrc;
-    const width = getLatexImageWidth(nodeWidth);
+    const effectiveWidth = nodeWidth ?? state.data.containerWidth;
+    const width = getLatexImageWidth(effectiveWidth);
     // if (!state.data.isInContainer) {
     //   const align =
     //     { left: 'flushleft', right: 'flushright' }[(nodeAlign as string)?.toLowerCase()] ??
