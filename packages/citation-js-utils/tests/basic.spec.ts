@@ -42,6 +42,26 @@ describe('Test reference rendering', () => {
     expect(citations['cury2020sparse'].getDOI()).toBe(TEST_DOI_IN_OTHER_FIELD);
     expect(citations['cury2020sparse'].getURL()).toBe(`https://doi.org/${TEST_DOI_IN_OTHER_FIELD}`);
   });
+
+  it('preserves \\url macro for URL-valued fields in exported BibTeX', async () => {
+    const src = `@misc{senhorst2026_data,
+  title = {2+1D Simulation of EUV Reflection Ptychography},
+  howpublished = {https://dx.doi.org/10.4121/1fd1f6e7-349d-4805-a522-ee6e02afdb1a}
+}
+
+@misc{url_only_entry,
+  title = {URL only entry},
+  url = {https://example.com/path}
+}`;
+    const data = parseBibTeX(src);
+    const citations = getCitationRenderers(data);
+    const exportedHowpublished = citations.senhorst2026_data.exportBibTeX();
+    const exportedUrl = citations.url_only_entry.exportBibTeX();
+    expect(exportedHowpublished).toContain(
+      'howpublished = {\\url{https://dx.doi.org/10.4121/1fd1f6e7-349d-4805-a522-ee6e02afdb1a}}',
+    );
+    expect(exportedUrl).toContain('url = {\\url{https://example.com/path}}');
+  });
 });
 
 describe('yearFromCitation', () => {
