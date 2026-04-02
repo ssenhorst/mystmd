@@ -166,6 +166,28 @@ export function firstNonDoiUrl(str?: string, doi?: string) {
   return matches.map((match) => match[0]).find((match) => !doi || !match.includes(doi));
 }
 
+function isSingleUrl(value: string) {
+  return /^https?:\/\/\S+$/i.test(value);
+}
+
+/**
+ * citation-js may normalize `\\url{...}` values into plain URLs.
+ * Re-wrap URL-only values so generated BibTeX remains LaTeX-safe.
+ */
+function preserveBibtexUrlMacros(bibtex: string) {
+  return bibtex
+    .split('\n')
+    .map((line) => {
+      const match = line.match(/^(\s*[A-Za-z][\w-]*\s*=\s*)([{\"])(.*)([}\"])(,?\s*)$/);
+      if (!match) return line;
+      const [, before, open, rawValue, close, trailing] = match;
+      const value = rawValue.trim();
+      if (value.includes('\\url{') || !isSingleUrl(value)) return line;
+      return `${before}${open}\\url{${value}}${close}${trailing}`;
+    })
+    .join('\n');
+}
+
 /**
  * Parse a citation style of the form `citation-<style>` into its `<style>`
  *
@@ -326,7 +348,7 @@ export function getCitationRenderers(data: CSL[]): CitationRenderer {
             return bibtexObjects[0]?.label;
           },
           exportBibTeX(): string {
-            return cite.set(c).format('bibtex', { format: 'text' }) as string;
+            return preserveBibtexUrlMacros(cite.set(c).format('bibtex', { format: 'text' }) as string);
           },
         },
       ];
