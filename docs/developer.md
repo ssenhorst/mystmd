@@ -101,7 +101,7 @@ MyST has multiple renderers, themes, and templates that allow it to transform My
   - The [MyST React Renderer](https://github.com/jupyter-book/myst-theme/tree/main/packages/myst-to-react) generates React components out of MyST AST for use by the default MyST Themes. It provides a `<MyST />` component which can render MyST AST into a React tree.
   - The source code of the [default MyST Themes](https://github.com/jupyter-book/myst-theme/tree/main/themes), each of which use the React renderer. These themes are built and then published at the [`myst-templates` GitHub organization](https://github.com/myst-templates/book-theme) for consumption by users.
   - A React [context](https://react.dev/reference/react/useContext), named `ThemeContext` (defined [here in the `myst-theme` repository](https://github.com/jupyter-book/myst-theme/blob/main/packages/providers/src/theme.tsx)), is used to push state deeply into the tree, without having to pass it via props.
-- [`myst-templates`](https://github.com/myst-templates): An index of templates that convert rendered components into final outputs. These are similar to _MyST Themes_, but follow a more standard "template" structure to product static outputs.
+- [`myst-templates`](https://github.com/myst-templates): An index of templates that convert rendered components into final outputs. These are similar to _MyST Themes_, but follow a more standard "template" structure to produce static outputs.
 
 :::{error} to do — explain rendering
 
@@ -398,6 +398,8 @@ No content or theme server is required for a static site build. Steps are:
 
 We'll use the mystmd docs site as an example.
 
+Under the hood, `mystmd build --html` starts myst-theme as a local Remix server, fetches each route as HTML, writes the results to disk, and runs a small post-processing pass (see [`packages/myst-cli/src/build/html/index.ts`](https://github.com/jupyter-book/mystmd/blob/main/packages/myst-cli/src/build/html/index.ts)).
+
 #### Build theme
 
 To build a static site against a local theme, the theme must be built as it would be for production. For that we will use the "make" target
@@ -560,7 +562,7 @@ When you publish a release, you upload a new version of the tool for package man
 
 - **Find the changesets PR**. This contains a list of the version updates that will be included with this release. [Here's an example of a release PR](https://github.com/jupyter-book/mystmd/pull/1896).
 - Review the changeset PR.
-  - Ensure that `mystmd` is in the changesets. Or you are intentially **not** releasing `mystmd` (this generally shouldn't happen), in which case the python and release notes are expected to fail.
+  - Ensure that `mystmd` is in the changesets. Or you are intentionally **not** releasing `mystmd` (this generally shouldn't happen), in which case the python and release notes are expected to fail.
   - Ensure that private or non-existent packages like docs, etc. are not in the changesets (these will cause an early failure)
   - Ensure that there are no **new** myst packages that need to be published (see [](#release:new-package))
 - **Merge the changesets PR**. After merging that PR, [this GitHub action will make a release](https://github.com/jupyter-book/mystmd/blob/main/.github/workflows/release.yml).
@@ -616,8 +618,7 @@ The process for releasing `myst-theme` infrastructure is similar to the release 
 - **Check the GitHub Workflow to see if it completes**. Go to the [`myst-theme` workflows page](https://github.com/jupyter-book/myst-theme/actions) to track its progress.
   - The action will build the latest version of the theme infrastructure.
   - It updates the template files in the [`myst-templates` GitHub organization](https://github.com/myst-templates).
-  - [Here are the lines that update this template](https://github.com/jupyter-book/myst-theme/blob/
-  8283e4505fdb418355ca25ae114ba7bea3cec956/.github/workflows/release.yml#L39-L50).
+  - [Here are the lines that update this template](https://github.com/jupyter-book/myst-theme/blob/8283e4505fdb418355ca25ae114ba7bea3cec956/.github/workflows/release.yml#L39-L50).
   - [Here's an example run of this workflow](https://github.com/jupyter-book/myst-theme/actions/runs/15005221275).
 - Confirm that a GitHub release has been made. Once this happens and there are no errors, you're done!
 

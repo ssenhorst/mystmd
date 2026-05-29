@@ -1,5 +1,21 @@
 # mystmd
 
+## 1.9.1
+
+### Patch Changes
+
+- 7820852: Updates to myst-execute to await closing connections for jupyter kernels
+
+## 1.9.0
+
+### Minor Changes
+
+- e8803fc: Redirect /foo/index.html to canonical URL (/foo/) to fix hydration.
+
+### Patch Changes
+
+- e8803fc: Don't check links with strict mode.
+
 ## 1.8.3
 
 ## 1.8.2

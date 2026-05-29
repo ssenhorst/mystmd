@@ -1,5 +1,32 @@
 # myst-cli
 
+## 1.9.1
+
+### Patch Changes
+
+- 7820852: Updates to myst-execute to await closing connections for jupyter kernels
+  - myst-migrate@1.9.1
+
+## 1.9.0
+
+### Minor Changes
+
+- e8803fc: Redirect /foo/index.html to canonical URL (/foo/) to fix hydration.
+
+### Patch Changes
+
+- e8803fc: Don't check links with strict mode.
+- e8803fc: Await signals to terminate processes
+- 85ea2a0: Expose content server, websocket and sendJson helper
+- daa7c4e: Fix type of stop function
+- Updated dependencies [e8803fc]
+- Updated dependencies [e8803fc]
+- Updated dependencies [e8803fc]
+  - myst-transforms@1.3.49
+  - myst-cli-utils@2.0.14
+  - myst-parser@1.7.2
+  - myst-migrate@1.9.0
+
 ## 1.8.3
 
 ### Patch Changes

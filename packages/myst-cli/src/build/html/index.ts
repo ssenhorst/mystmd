@@ -1,3 +1,13 @@
+// Static-build HTML pipeline for MyST sites.
+//
+// The myst-theme (a separate repo) is the React/Remix app that renders MyST documents.
+// For a static build we spin myst-theme up as a local Remix server, fetch every route as fully-rendered HTML, and write the results to disk.
+// This file does that in `buildHtml`, plus a small post-processing pass (`rewriteAssetsFolder`) that:
+// - rewrites asset URLs
+// - injects an `/foo/index.html` -> `/foo/` redirect script
+//
+// The JS and CSS are produced by myst-theme.
+
 import fs from 'fs-extra';
 import path from 'node:path';
 import { writeFileToFolder } from 'myst-cli-utils';
@@ -72,9 +82,23 @@ export async function currentSiteRoutes(
 // This is defined in the remix `publicPath` and allows us to overwrite it here.
 const ASSETS_FOLDER = 'myst_assets_folder';
 
+// Script injected at the end of <head> in every index.html to redirect
+// "/foo/index.html" → "/foo/" before Remix hydrates, preventing a URL
+// mismatch that breaks client-side routing. Remix renders the root index
+// for URL "/" but static servers also serve the same file at "/index.html",
+// where the URL doesn't match any Remix route → runtime error.
+const INDEX_REDIRECT_SCRIPT =
+  `<script>(function(){` +
+  `var p=window.location.pathname;` +
+  `if(p.endsWith('/index.html'))` +
+  `window.location.replace((p.slice(0,-10)||'/')+window.location.search+window.location.hash);` +
+  `})();</script>`;
+
 /**
  * Rewrite URLs in HTML/JS/JSON files pointing to the default assets folder in
- * terms of the provided base URL
+ * terms of the provided base URL, and append a URL-normalisation script to
+ * the end of <head> in every index.html so that direct access via
+ * /foo/index.html redirects to /foo/.
  *
  * @param directory directory of files to recursively rewrite
  * @param baseurl base URL of the built site
@@ -91,12 +115,12 @@ function rewriteAssetsFolder(directory: string, baseurl?: string): void {
       return;
     }
     if (!['.html', '.js', '.json'].includes(path.extname(file))) return;
-    const data = fs.readFileSync(file).toString();
-    const modified = data.replace(
-      new RegExp(`\\/${ASSETS_FOLDER}\\/`, 'g'),
-      `${baseurl || ''}/build/`,
-    );
-    fs.writeFileSync(file, modified);
+    let data = fs.readFileSync(file).toString();
+    data = data.replace(new RegExp(`\\/${ASSETS_FOLDER}\\/`, 'g'), `${baseurl || ''}/build/`);
+    if (filename === 'index.html') {
+      data = data.replace('</head>', `${INDEX_REDIRECT_SCRIPT}</head>`);
+    }
+    fs.writeFileSync(file, data);
   });
 }
 
@@ -173,7 +197,7 @@ export async function buildHtml(session: ISession, opts: StartOptions) {
       }),
     ),
   );
-  appServer.stop();
+  await appServer.stop();
 
   // Copy the files for the template used
   const templateBuildDir = path.join(template.templatePath, 'public');
