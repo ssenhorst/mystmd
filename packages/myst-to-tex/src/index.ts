@@ -474,7 +474,26 @@ const handlers: Record<string, Handler> = {
   },
   raw(node, state) {
     if (node.tex) {
-      state.write(node.tex);
+      // Move any \usepackage or \RequirePackage commands into the preamble
+      // by registering them via state.usePackages(), and only write the
+      // remaining TeX content into the document body.
+      const texContent = String(node.tex || '');
+      const pkgRegex = /\\(?:usepackage|RequirePackage)(?:\[[^\]]*\])?\{([^}]+)\}/g;
+      let m;
+      const found: string[] = [];
+      // Collect packages and register them
+      // eslint-disable-next-line no-cond-assign
+      while ((m = pkgRegex.exec(texContent)) !== null) {
+        const list = (m[1] || '').split(',').map((s) => s.trim()).filter(Boolean);
+        found.push(...list);
+      }
+      if (found.length) state.usePackages(...found);
+
+      // Remove registered package lines from the tex block before writing
+      const cleaned = texContent.replace(pkgRegex, '');
+      if (cleaned.length) {
+        state.write(cleaned);
+      }
     } else if (node.children?.length) {
       state.renderChildren(node);
     }
