@@ -485,7 +485,10 @@ const handlers: Record<string, Handler> = {
       // Collect packages and register them
       // eslint-disable-next-line no-cond-assign
       while ((m = pkgRegex.exec(texContent)) !== null) {
-        const list = (m[1] || '').split(',').map((s) => s.trim()).filter(Boolean);
+        const list = (m[1] || '')
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
         found.push(...list);
       }
       if (found.length) state.usePackages(...found);

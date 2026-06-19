@@ -178,7 +178,7 @@ function preserveBibtexUrlMacros(bibtex: string) {
   return bibtex
     .split('\n')
     .map((line) => {
-      const match = line.match(/^(\s*[A-Za-z][\w-]*\s*=\s*)([{\"])(.*)([}\"])(,?\s*)$/);
+      const match = line.match(/^(\s*[A-Za-z][\w-]*\s*=\s*)([{"])(.*)([}"])(,?\s*)$/);
       if (!match) return line;
       const [, before, open, rawValue, close, trailing] = match;
       const value = rawValue.trim();
@@ -348,7 +348,9 @@ export function getCitationRenderers(data: CSL[]): CitationRenderer {
             return bibtexObjects[0]?.label;
           },
           exportBibTeX(): string {
-            return preserveBibtexUrlMacros(cite.set(c).format('bibtex', { format: 'text' }) as string);
+            return preserveBibtexUrlMacros(
+              cite.set(c).format('bibtex', { format: 'text' }) as string,
+            );
           },
         },
       ];
