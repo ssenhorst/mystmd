@@ -20,6 +20,7 @@ import { slugToUrl } from 'myst-common';
 import pLimit from 'p-limit';
 import { fetchWithRetry } from '../../utils/fetchWithRetry.js';
 import { selectors } from '../../store/index.js';
+import { copyStaticFiles } from '../../utils/copyStaticFiles.js';
 import type { LocalProjectPage } from '../../project/types.js';
 
 const limitConnections = pLimit(5);
@@ -199,12 +200,24 @@ export async function buildHtml(session: ISession, opts: StartOptions) {
   );
   await appServer.stop();
 
-  // Copy the files for the template used
+  // Copy the files for the template used.
+  //
+  // This always includes the thebe JS chunks, even when no project enables
+  // `thebe`/`jupyter`. The myst-theme uses thebe-core to render Jupyter cell
+  // outputs, so these chunks are required for outputs to render at all.
   const templateBuildDir = path.join(template.templatePath, 'public');
   fs.copySync(templateBuildDir, htmlDir);
 
   // Copy all of the static assets
   fs.copySync(session.publicPath(), path.join(htmlDir, 'build'));
+
+  // Copy user static files to html build root
+  const siteConfig = selectors.selectCurrentSiteConfig(session.store.getState());
+  for (const proj of siteConfig?.projects ?? []) {
+    if (!proj.path) continue;
+    const projectConfig = selectors.selectLocalProjectConfig(session.store.getState(), proj.path);
+    copyStaticFiles(session, projectConfig?.static_files ?? [], htmlDir, proj.path);
+  }
   fs.copySync(path.join(session.sitePath(), 'config.json'), path.join(htmlDir, 'config.json'));
   fs.copySync(path.join(session.sitePath(), 'objects.inv'), path.join(htmlDir, 'objects.inv'));
 
