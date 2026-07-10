@@ -402,6 +402,7 @@ export async function finalizeMdast(
     imageExtensions,
     optimizeWebp,
     simplifyFigures,
+    removePlaceholders,
     processThumbnail,
     maxSizeWebp,
   }: {
@@ -411,6 +412,7 @@ export async function finalizeMdast(
     imageExtensions?: ImageExtensions[];
     optimizeWebp?: boolean;
     simplifyFigures?: boolean;
+    removePlaceholders?: boolean;
     processThumbnail?: boolean;
     maxSizeWebp?: number;
   },
@@ -462,7 +464,7 @@ export async function finalizeMdast(
     }
   }
   await transformDeleteBase64UrlSource(mdast);
-  if (simplifyFigures) {
+  if (removePlaceholders) {
     // This must happen after embedded content is resolved so all children are present on figures
     transformPlaceholderImages(mdast, { imageExtensions });
   }

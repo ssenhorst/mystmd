@@ -7,7 +7,7 @@ import { selectAll } from 'unist-util-select';
 import path from 'node:path';
 import type { VFileMessage } from 'vfile-message';
 import type { PageFrontmatter } from 'myst-frontmatter';
-import type { Image } from 'myst-spec-ext';
+import type { Image } from 'myst-spec';
 import { extFromMimeType } from 'nbtx';
 import type { ISession } from '../session/types.js';
 import { castSession } from '../session/cache.js';
@@ -688,6 +688,29 @@ function isValidImageNode(node: GenericNode, validExts: ImageExtensions[]) {
   );
 }
 
+function isValidWebNode(node: GenericNode) {
+  return ['div', 'iframe', 'html', 'htmlParsed'].includes(node.type);
+}
+
+function isRenderableOutput(node: GenericNode, validExts: ImageExtensions[]) {
+  if (node.type !== 'output' || !node.jupyter_data) return false;
+  if (node.visibility === 'remove' || node.visibility === 'hide') return false;
+  if (node.children?.some((child) => isValidImageNode(child, validExts) || isValidWebNode(child))) {
+    return true;
+  }
+  const data = node.jupyter_data.data;
+  if (data && typeof data === 'object') {
+    return Object.values(data).some((value: any) => {
+      const contentType = value?.content_type;
+      return (
+        typeof contentType === 'string' &&
+        (contentType.startsWith('image/') || contentType === 'text/html' || contentType === 'text/plain')
+      );
+    });
+  }
+  return ['stream', 'error'].includes(node.jupyter_data.output_type);
+}
+
 /**
  * Handle placeholder image nodes in figures.
  *
@@ -700,6 +723,7 @@ function isValidImageNode(node: GenericNode, validExts: ImageExtensions[]) {
  * Elsewhere in the mdast tree, placeholder images are just left as-is; currently the only way to
  * author a placeholder image is using a figure directive.
  */
+
 export function transformPlaceholderImages(
   mdast: GenericParent,
   opts?: { imageExtensions?: ImageExtensions[] },
@@ -708,19 +732,20 @@ export function transformPlaceholderImages(
   selectAll('container', mdast)
     .filter((container: GenericNode) => container.kind === 'figure')
     .forEach((figure: GenericNode) => {
-      const validContent = figure.children?.filter((child) => {
-        return isValidImageNode(child, validExts) && !child.placeholder;
+      const validContent = figure.children?.some((child) => {
+        if (child.type === 'outputs') {
+          return child.children?.some((output) => isRenderableOutput(output, validExts));
+        }
+        return (isValidImageNode(child, validExts) || isValidWebNode(child)) && !child.placeholder;
       });
-      const placeholders = figure.children?.filter((child) => {
-        return isValidImageNode(child, validExts) && child.placeholder;
-      });
-      if (validContent?.length) {
-        placeholders?.forEach((node) => {
+      const placeholders = selectAll('image', figure).filter((node: GenericNode) => node.placeholder);
+      if (validContent) {
+        placeholders.forEach((node) => {
           node.type = '__remove__';
         });
       } else {
-        placeholders?.forEach((node) => {
-          node.placeholder = false;
+        placeholders.forEach((node) => {
+          (node as Image).placeholder = false;
         });
       }
     });

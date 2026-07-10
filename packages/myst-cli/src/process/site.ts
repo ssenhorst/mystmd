@@ -507,6 +507,8 @@ export async function fastProcessFile(
           imageExtensions: imageExtensions ?? WEB_IMAGE_EXTENSIONS,
           optimizeWebp: true,
           processThumbnail: f === file,
+          simplifyFigures: false,
+          removePlaceholders: true,
           maxSizeWebp,
         });
       }
@@ -624,6 +626,8 @@ export async function processProject(
             imageExtensions: usedImageExtensions,
             optimizeWebp: true,
             processThumbnail: true,
+            simplifyFigures: false,
+            removePlaceholders: true,
             maxSizeWebp,
           });
         }
