@@ -689,7 +689,7 @@ function isValidImageNode(node: GenericNode, validExts: ImageExtensions[]) {
 }
 
 function isValidWebNode(node: GenericNode) {
-  return ['div', 'iframe', 'html', 'htmlParsed'].includes(node.type);
+  return ['anywidget', 'div', 'iframe', 'html', 'htmlParsed'].includes(node.type);
 }
 
 function isRenderableOutput(node: GenericNode, validExts: ImageExtensions[]) {
