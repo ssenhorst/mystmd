@@ -17,8 +17,8 @@ export function createTexMathCommands(plugins: Record<string, string>): string[]
   if (!plugins || Object.keys(plugins).length === 0) return [];
   return Object.entries(plugins).map(([k, v]) => {
     const numArgs = v.match(/#([1-9])/g)?.length ?? 0;
-    if (numArgs === 0) return `\\newcommand{${k}}{${v}}`;
-    return `\\newcommand{${k}}[${numArgs}]{${v}}`;
+    if (numArgs === 0) return `\\providecommand{${k}}{${v}}\n\\renewcommand{${k}}{${v}}`;
+    return `\\providecommand{${k}}[${numArgs}]{${v}}\n\\renewcommand{${k}}[${numArgs}]{${v}}`;
   });
 }
 
