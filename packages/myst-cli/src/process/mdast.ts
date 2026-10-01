@@ -436,6 +436,9 @@ export async function finalizeMdast(
       file,
       imageWriteFolder,
       simplifyFigures ? imageWriteFolder : (imageAltOutputFolder ?? imageWriteFolder),
+      // Simplified figures render the widget's placeholder rather than the widget, so
+      // there is nothing to feed the model's assets to -- and they can be large.
+      { models: !simplifyFigures },
     );
     await transformImagesToDisk(session, mdast, file, imageWriteFolder, {
       altOutputFolder: imageAltOutputFolder,
